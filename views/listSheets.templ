@@ -1,0 +1,21 @@
+package views
+
+import "github.com/linn221/memory-sheets/app"
+
+templ Index(sheets []*app.MemorySheet) {
+    <main>
+
+    <ul>
+    for _, sheet := range sheets {
+        <li hx-get="/sheets/{sheet.DisplayDate()}" hx-target="#sheet-content">
+            {sheet.DisplayDate()}
+        </li>
+    }
+    </ul>
+
+    <div id="sheet-content">
+    {sheets[0].Text}
+    </div>
+
+    </main>
+}

@@ -2,21 +2,42 @@ package app
 
 import (
 	"net/http"
-
-	"github.com/linn221/memory-sheets/services"
 )
 
 type App struct {
-	SheetService   *services.SheetService
+	sheetService   *SheetService
 	AuthMiddleware func(http.Handler) http.Handler
-	port           string
+	config         Cfg
+	storage        Storage
 }
 
-func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Handler) *App {
-	sheetService := services.NewSheetService(dir)
+type Cfg struct {
+	port string
+	dir  string
+}
+
+type Storage struct {
+	pattern RemindPattern
+	sheets  []*MemorySheet
+}
+
+func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Handler, pattern RemindPattern) *App {
+
+	sheetSerice := &SheetService{}
+	sheets, err := sheetSerice.ReadDir(dir)
+	if err != nil {
+		panic(err)
+	}
+
 	return &App{
-		SheetService:   sheetService,
+		config: Cfg{
+			dir:  dir,
+			port: port,
+		},
 		AuthMiddleware: authMiddleware,
-		port:           port,
+		storage: Storage{
+			pattern: pattern,
+			sheets:  sheets,
+		},
 	}
 }
