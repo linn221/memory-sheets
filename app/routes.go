@@ -2,6 +2,7 @@ package app
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/linn221/memory-sheets/views"
 )
@@ -21,35 +22,30 @@ func (a *App) Serve() {
 }
 
 func (a *App) SetupRoutes(mux *http.ServeMux) {
-
-	mux.HandleFunc("GET /sheets", views.Handler(func(vr *views.ViewRenderer) error {
-		today := Today()
-		remindingSheets, err := a.sheetService.LookUpSheets(today)
+	mux.HandleFunc("GET /sheets", views.Handler(a.HandleGetSheets))
+	mux.HandleFunc("GET /sheets/new", views.Handler(func(vr *views.ViewRenderer) error {
+		return vr.NewSheetPage()
+	}))
+	mux.HandleFunc("GET /sheets/{date}/edit", views.Handler(func(vr *views.ViewRenderer) error {
+		r := vr.Request()
+		dateStr := r.PathValue("date")
+		date, err := time.Parse(time.DateOnly, dateStr)
 		if err != nil {
 			return err
 		}
-		return vr.ListSheets(remindingSheets)
-	}))
-
-	mux.HandleFunc("GET /all-sheets", views.Handler(func(vr *views.ViewRenderer) error {
-		return vr.ListSheets(a.sheetService.sheets)
-	}))
-
-	mux.HandleFunc("POST /sheets", func(w http.ResponseWriter, r *http.Request) {
-		today := Today()
-		if a.sheetService.IsSheetExist(today) {
-
-		} else {
-
+		index, err := a.sheetService.GetSheetByDate(date)
+		if err != nil {
+			return err
 		}
-	})
-	mux.HandleFunc("GET /sheets/{date}", func(w http.ResponseWriter, r *http.Request) {
+		content := a.sheetService.sheets[index].Text
+		return vr.EditSheetPage(dateStr, content)
+	}))
 
-	})
-	mux.HandleFunc("PUT /sheets/{date}", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-	mux.HandleFunc("DELETE /sheets/{date}", func(w http.ResponseWriter, r *http.Request) {
-
-	})
+	mux.HandleFunc("GET /all-sheets", views.Handler(a.HandleGetAllSheets))
+	mux.HandleFunc("POST /sheets", a.HandleCreateSheet())
+	mux.HandleFunc("GET /sheets/{date}", views.Handler(a.HandleGetSheetByDate))
+	mux.HandleFunc("PUT /sheets/{date}", a.HandleUpdateSheet())
+	mux.HandleFunc("DELETE /sheets/{date}", a.HandleDeleteSheet())
+	fileHandler := http.StripPrefix("/static", http.FileServer(http.Dir("static")))
+	mux.Handle("/static/", fileHandler)
 }

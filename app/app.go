@@ -12,22 +12,20 @@ type App struct {
 
 type Cfg struct {
 	port string
-	dir  string
 }
 
 func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Handler, pattern RemindPattern) *App {
 
 	sheetSerice := &SheetService{
 		pattern: pattern,
+		dir:     dir,
 	}
-	err := sheetSerice.ReadDir(dir)
+	err := sheetSerice.ReadDir()
 	if err != nil {
 		panic(err)
 	}
-
 	return &App{
 		config: Cfg{
-			dir:  dir,
 			port: port,
 		},
 		sheetService:   sheetSerice,

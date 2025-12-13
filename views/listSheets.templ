@@ -2,29 +2,30 @@ package views
 
 import "github.com/linn221/memory-sheets/models"
 
-templ Index(sheets []*models.MemorySheet) {
+templ Index(session *models.Session, sheets []*models.MemorySheet) {
     <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
-        </head>
-        <body>
+    @Header()
+    <body>
             <main>
+            if session.HasMessage() {
+                <blockquote>{session.FlushMessage()}</blockquote>
+            }
+                <button hx-get="/sheets/new" hx-target="#sheet-form">New</button>
+                <div id="sheet-form"></div>
                 <ul>
                 for _, sheet := range sheets {
-                    <li hx-get="/sheets/{sheet.DisplayDate()}" hx-target="#sheet-content">
-                        {sheet.DisplayDate()}
+                    <li>
+                        <a href={sheet.Url()} hx-get={sheet.Url()} hx-target="#sheet-content" hx-swap="outerHTML">
+                            {sheet.Title()}
+                        </a>
                     </li>
                 }
                 </ul>
 
-                <div id="sheet-content">
                 if len(sheets) > 0 {
-                    @templ.Raw(MarkdownToHTMLSafe(sheets[0].Text))
+                    @ListingSheet(sheets[0], nil, sheets[1])
                 }
-                </div>
             </main>
-        </body>
-    </html>
+    </body>
+            </html>
 }
