@@ -8,7 +8,6 @@ type App struct {
 	sheetService   *SheetService
 	AuthMiddleware func(http.Handler) http.Handler
 	config         Cfg
-	storage        Storage
 }
 
 type Cfg struct {
@@ -16,15 +15,12 @@ type Cfg struct {
 	dir  string
 }
 
-type Storage struct {
-	pattern RemindPattern
-	sheets  []*MemorySheet
-}
-
 func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Handler, pattern RemindPattern) *App {
 
-	sheetSerice := &SheetService{}
-	sheets, err := sheetSerice.ReadDir(dir)
+	sheetSerice := &SheetService{
+		pattern: pattern,
+	}
+	err := sheetSerice.ReadDir(dir)
 	if err != nil {
 		panic(err)
 	}
@@ -34,10 +30,7 @@ func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Hand
 			dir:  dir,
 			port: port,
 		},
+		sheetService:   sheetSerice,
 		AuthMiddleware: authMiddleware,
-		storage: Storage{
-			pattern: pattern,
-			sheets:  sheets,
-		},
 	}
 }

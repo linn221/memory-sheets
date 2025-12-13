@@ -24,14 +24,24 @@ func (a *App) SetupRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("GET /sheets", views.Handler(func(vr *views.ViewRenderer) error {
 		today := Today()
-		remindingSheets, err := a.sheetService.LookUpSheets(a.storage.sheets, today, a.storage.pattern)
+		remindingSheets, err := a.sheetService.LookUpSheets(today)
 		if err != nil {
 			return err
 		}
 		return vr.ListSheets(remindingSheets)
 	}))
-	mux.HandleFunc("POST /sheets", func(w http.ResponseWriter, r *http.Request) {
 
+	mux.HandleFunc("GET /all-sheets", views.Handler(func(vr *views.ViewRenderer) error {
+		return vr.ListSheets(a.sheetService.sheets)
+	}))
+
+	mux.HandleFunc("POST /sheets", func(w http.ResponseWriter, r *http.Request) {
+		today := Today()
+		if a.sheetService.IsSheetExist(today) {
+
+		} else {
+
+		}
 	})
 	mux.HandleFunc("GET /sheets/{date}", func(w http.ResponseWriter, r *http.Request) {
 

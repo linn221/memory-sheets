@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/linn221/memory-sheets/app"
+	"github.com/linn221/memory-sheets/models"
 )
 
 type ViewRenderer struct {
@@ -12,7 +12,7 @@ type ViewRenderer struct {
 	w   http.ResponseWriter
 }
 
-func (vr *ViewRenderer) ListSheets(sheets []*app.MemorySheet) error {
+func (vr *ViewRenderer) ListSheets(sheets []*models.MemorySheet) error {
 	return Index(sheets).Render(vr.ctx, vr.w)
 }
 

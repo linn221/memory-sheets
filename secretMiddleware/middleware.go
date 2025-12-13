@@ -14,13 +14,15 @@ type SecretConfig struct {
 	SecretPath  string
 	RedirectUrl string
 	Host        string
+	PromptFunc  func(string)
 	// expiration time.Time // for later
 
 }
 
 func (cfg *SecretConfig) Middleware() func(h http.Handler) http.Handler {
 	theSecret := cfg.SecretFunc()
-	fmt.Printf("Magic auth link: %s/%s?secret=%s\n", cfg.Host, cfg.SecretPath, theSecret)
+	// fmt.Printf("Magic auth link: %s/%s?secret=%s\n", cfg.Host, cfg.SecretPath, theSecret)
+	cfg.PromptFunc(fmt.Sprintf("%s/%s?secret=%s", cfg.Host, cfg.SecretPath, theSecret))
 
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,13 +59,20 @@ func (cfg *SecretConfig) Middleware() func(h http.Handler) http.Handler {
 	}
 }
 
-func New(host string, port string, secretPath string, redirectPath string, secretFunc func() string) func(http.Handler) http.Handler {
+func New(host string, port string, secretPath string, redirectPath string, secretFunc func() string, promptFunc func(string)) func(http.Handler) http.Handler {
+	if redirectPath[0] == '/' {
+		redirectPath = redirectPath[1:]
+	}
+	if secretPath[0] == '/' {
+		secretPath = secretPath[1:]
+	}
 	secretConfig := SecretConfig{
 		// Host:        "http://localhost:" + port,
 		Host:        host + ":" + port,
 		SecretPath:  secretPath,
 		RedirectUrl: host + ":" + port + "/" + redirectPath,
 		SecretFunc:  secretFunc,
+		PromptFunc:  promptFunc,
 		// SecretFunc: func() string {
 		// 	// return utils.GenerateRandomString(20)
 		// 	secretFilename := "secret.txt"

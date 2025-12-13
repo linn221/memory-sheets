@@ -1,21 +1,30 @@
 package views
 
-import "github.com/linn221/memory-sheets/app"
+import "github.com/linn221/memory-sheets/models"
 
-templ Index(sheets []*app.MemorySheet) {
-    <main>
+templ Index(sheets []*models.MemorySheet) {
+    <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+        </head>
+        <body>
+            <main>
+                <ul>
+                for _, sheet := range sheets {
+                    <li hx-get="/sheets/{sheet.DisplayDate()}" hx-target="#sheet-content">
+                        {sheet.DisplayDate()}
+                    </li>
+                }
+                </ul>
 
-    <ul>
-    for _, sheet := range sheets {
-        <li hx-get="/sheets/{sheet.DisplayDate()}" hx-target="#sheet-content">
-            {sheet.DisplayDate()}
-        </li>
-    }
-    </ul>
-
-    <div id="sheet-content">
-    {sheets[0].Text}
-    </div>
-
-    </main>
+                <div id="sheet-content">
+                if len(sheets) > 0 {
+                    @templ.Raw(MarkdownToHTMLSafe(sheets[0].Text))
+                }
+                </div>
+            </main>
+        </body>
+    </html>
 }
