@@ -7,28 +7,40 @@ templ Index(session *models.Session, sheets []*models.MemorySheet, todaySheet *m
     @Header()
     <body>
             <main>
+            <nav>
+                <a href="/all-sheets">all sheets</a>
+                |
+                <a href="/sheets">today sheets</a>
+            </nav>
+            <input type="search" placeholder="Search"
+                name="q"
+                hx-get="/search"
+                hx-trigger="input changed delay:300ms"
+                hx-target="#sheets"
+                style="width: 100%; box-sizing: border-box; margin: 2rem 0;"
+            >
             if session.HasMessage() {
-                <blockquote>{session.FlushMessage()}</blockquote>
+                <blockquote id="status">{session.FlushMessage()}</blockquote>
+            } else {
+                <blockquote id="status" style="display: none;"></blockquote>
             }
-                <ul>
                 if todaySheet == nil {
                     @CreateSheetComponent()
                 } else {
                     @ListingSheet(todaySheet)
                 }
-                for _, sheet := range sheets {
-                    <li>
-                        <a href={"#"+sheet.DateStr()}>
-                            {sheet.Title()}
-                        </a>
-                    </li>
-                }
-                </ul>
 
-                for _, sheet := range sheets {
-                    @ListingSheet(sheet)
-                }
+                @SheetListingComponent(sheets)
+
             </main>
     </body>
             </html>
+}
+
+templ SheetListingComponent(sheets []*models.MemorySheet) {
+    <div id="sheets">
+            for _, sheet := range sheets {
+                @ListingSheet(sheet)
+            }
+    </div>
 }

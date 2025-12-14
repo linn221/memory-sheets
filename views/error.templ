@@ -1,5 +1,5 @@
 package views
 
 templ ErrorBox(message string) {
-    <h3>{message}</h3>
+    <blockquote id="status" hx-swap-oob="true">{message}</blockquote>
 }

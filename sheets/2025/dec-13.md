@@ -4,10 +4,10 @@ ORDER BY
     sort the items of each group that has been split by PARTITION BY
 
 Window functions are used:
+- to process rows returned after WHERE, GROUP BY, HAVING
+- to sort the rows under a partion
+- to sum up the rows
 
-    - to process rows returned after WHERE, GROUP BY, HAVING
-    - to sort the rows under a partion
-    - to sum up the rows
 It will preserve the rows, order, return to the original row. The query's outer ORDER BY still decides the final ouptput order
 
 Before window function,
@@ -26,7 +26,7 @@ After window function applied:
         (PARTITION BY employee)
 ```
 
-```
+```csv
 1,Alice,200,1,400
 2,Bob,300,1,500
 3,Alice,200,2,400

@@ -29,7 +29,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" href=\"/static/water.css\"><script src=\"/static/htmx.min.js\" crossorigin=\"anonymous\"></script></head>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" href=\"/static/water.css\"><script src=\"/static/htmx.min.js\" crossorigin=\"anonymous\"></script><style>\n            .box {\n  border: 2px solid rgba(0,0,0,0.25);\n  padding: 1rem;\n  margin: 1rem 0;\n}\n\n            .box ul, .box ol {\n  margin: 1em 0;\n  padding-left: 2em;\n            }\n\n            .box ul {\n  list-style-type: disc;\n            }\n\n            .box ol {\n  list-style-type: decimal;\n            }\n\n            .box li {\n  margin: 0.5em 0;\n            }\n\n            </style><script>\n            function autoResizeTextarea(ta) {\n                ta.style.height = 'auto';\n                ta.style.height = ta.scrollHeight + 'px';\n            }\n            document.addEventListener('DOMContentLoaded', function() {\n                document.querySelectorAll('textarea').forEach(autoResizeTextarea);\n                document.body.addEventListener('htmx:afterSwap', function() {\n                    document.querySelectorAll('textarea').forEach(autoResizeTextarea);\n                });\n            });\n            </script></head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

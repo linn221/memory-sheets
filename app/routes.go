@@ -28,6 +28,7 @@ func (a *App) SetupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /sheets", views.Handler(a.HandleCreateSheet))
 	mux.HandleFunc("PUT /sheets/{date}", views.Handler(a.HandleUpdateSheet))
 	mux.HandleFunc("DELETE /sheets/{date}", views.Handler(a.HandleDeleteSheet))
+	mux.HandleFunc("GET /search", views.Handler(a.HandleSearch))
 	// mux.HandleFunc("GET /change-pattern", views.Handler(a.HandleGetChangePattern))
 	// mux.HandleFunc("POST /change-pattern", views.Handler(a.HandlePostChangePattern))
 	fileHandler := http.StripPrefix("/static", http.FileServer(http.Dir("static")))

@@ -204,3 +204,17 @@ func (a *App) HandlePostChangePattern(vr *views.ViewRenderer) error {
 	http.Redirect(vr.ResponseWriter(), vr.Request(), "/change-pattern", http.StatusSeeOther)
 	return nil
 }
+
+// HandleSearch handles GET /search - searches sheets using regex pattern from q query parameter
+func (a *App) HandleSearch(vr *views.ViewRenderer) error {
+	r := vr.Request()
+	query := r.URL.Query().Get("q")
+
+	// Search for matching sheets
+	results, err := a.sheetService.Search(query)
+	if err != nil {
+		return err
+	}
+
+	return vr.SheetListingComponents(results)
+}

@@ -42,6 +42,10 @@ func (vr *ViewRenderer) ChangePatternPage(selectedDays map[int]bool) error {
 	return vr.render(ChangePatternPage(selectedDays))
 }
 
+func (vr *ViewRenderer) SheetListingComponents(sheets []*models.MemorySheet) error {
+	return vr.render(SheetListingComponent(sheets))
+}
+
 func Handler(handle func(vr *ViewRenderer) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vr := ViewRenderer{

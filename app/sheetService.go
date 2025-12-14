@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -321,6 +322,44 @@ func (s *SheetService) GetPattern() RemindPattern {
 	pattern := make(RemindPattern, len(s.pattern))
 	copy(pattern, s.pattern)
 	return pattern
+}
+
+// Search searches through all sheets using the provided regex pattern
+// Returns matching sheets with Text field modified to bold matched strings using markdown (**text**)
+func (s *SheetService) Search(patternStr string) ([]*models.MemorySheet, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if patternStr == "" {
+		return s.sheets, nil
+	}
+
+	// Compile regex pattern
+	re, err := regexp.Compile(patternStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid regex pattern: %v", err)
+	}
+
+	var matchingSheets []*models.MemorySheet
+	for _, sheet := range s.sheets {
+		// Check if the pattern matches the text
+		if re.MatchString(sheet.Text) {
+			// Create a copy of the sheet with highlighted matches
+			highlightedText := re.ReplaceAllStringFunc(sheet.Text, func(match string) string {
+				return "**" + match + "**"
+			})
+
+			// Create a new sheet with highlighted text
+			highlightedSheet := &models.MemorySheet{
+				Date: sheet.Date,
+				Year: sheet.Year,
+				Text: highlightedText,
+			}
+			matchingSheets = append(matchingSheets, highlightedSheet)
+		}
+	}
+
+	return matchingSheets, nil
 }
 
 // LoadPatternFromJSON loads pattern from a JSON file
