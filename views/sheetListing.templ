@@ -2,19 +2,13 @@ package views
 
 import "github.com/linn221/memory-sheets/models"
 
-templ ListingSheet(sheet *models.MemorySheet, prevSheet *models.MemorySheet, nextSheet *models.MemorySheet) {
-    <div id="sheet-content" hx-target="this" hx-swap="outerHTML">
-        <h3>{sheet.Title()}</h3>
+templ ListingSheet(sheet *models.MemorySheet) {
+    <div id={sheet.DateStr()} hx-target="this" hx-swap="outerHTML">
+        <lead>{sheet.Title()}</lead>
         <hr>
             @templ.Raw(MarkdownToHTMLSafe(sheet.Text))
         <hr>
-        <button hx-get={sheet.Url() + "/edit"} hx-target="#sheet-form">Edit</button>
-        <button hx-delete={sheet.Url()} hx-confirm="are you sure?">Delete</button>
-        if prevSheet != nil {
-        <button hx-get={prevSheet.Url()}>Prev</button>
-        }
-        if nextSheet != nil {
-        <button hx-get={nextSheet.Url()}>Next</button>
-        }
+        <button hx-get={sheet.Url() + "/edit"}>Edit</button>
+        <button hx-delete={sheet.Url()} hx-confirm="are you sure?" hx-swap="delete">Delete</button>
     </div>
 }

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -67,25 +68,34 @@ func (s *SheetService) LookUpSheets(date time.Time) ([]*models.MemorySheet, erro
 	return remindingSheets, nil
 }
 
-// will create new file if it does not exists with the name monthPrefix-day.md
-func (s *SheetService) CreateSheet(date time.Time, content string) error {
+func (s *SheetService) CreateSheet(content string) error {
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	path := s.fromDateToFilepath(date)
+	date := Today()
+	filepath := s.fromDateToFilepath(date)
 
-	// Check if file already exists
-	if fileExists(path) {
-		return fmt.Errorf("sheet already exists for date %s", date.Format(time.DateOnly))
+	// Check if file exists
+	if fileExists(filepath) {
+		return fmt.Errorf("sheet already exist for date %s", date.Format(time.DateOnly))
 	}
 
 	// Write the file
-	if err := writeFileContent(path, content); err != nil {
+	if err := writeFileContent(filepath, content); err != nil {
 		return err
 	}
 
-	// Add to in-memory sheets
+	// Update in-memory sheet
 	normalizedDate := normalizeDate(date)
+	for _, sheet := range s.sheets {
+		if sheet.Date.Equal(normalizedDate) {
+			sheet.Text = content
+			return nil
+		}
+	}
+
+	// If not found in memory, add it
 	sheet := &models.MemorySheet{
 		Date: normalizedDate,
 		Year: date.Year(),
@@ -164,15 +174,15 @@ func (s *SheetService) DeleteSheet(date time.Time) error {
 
 // read the sheet
 // returns the index of the sheet in Sheets slice
-func (s *SheetService) GetSheetByDate(date time.Time) (int, error) {
+func (s *SheetService) GetSheetByDate(date time.Time) (*models.MemorySheet, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	// Check in-memory sheets first
 	normalizedDate := normalizeDate(date)
-	for i, sheet := range s.sheets {
+	for _, sheet := range s.sheets {
 		if sheet.Date.Equal(normalizedDate) {
-			return i, nil
+			return sheet, nil
 		}
 	}
 
@@ -181,12 +191,12 @@ func (s *SheetService) GetSheetByDate(date time.Time) (int, error) {
 	if fileExists(filepath) {
 		index, err := s.loadSheetFromFile(date, filepath)
 		if err != nil {
-			return -1, err
+			return nil, err
 		}
-		return index, nil
+		return s.sheets[index], nil
 	}
 
-	return -1, fmt.Errorf("sheet does not exist for date %s", date.Format(time.DateOnly))
+	return nil, fmt.Errorf("sheet does not exist for date %s", date.Format(time.DateOnly))
 }
 
 // read the sheet
@@ -213,7 +223,8 @@ func (s *SheetService) IsSheetExist(date time.Time) bool {
 func (s *SheetService) fromDateToFilepath(date time.Time) string {
 	month := strings.ToLower(date.Format("Jan"))
 	day := date.Day()
-	filename := fmt.Sprintf("%s-%02d.md", month, day)
+	year := date.Year()
+	filename := fmt.Sprintf("%d/%s-%d.md", year, month, day)
 	return filepath.Join(s.dir, filename)
 }
 
@@ -294,4 +305,59 @@ func IsDateReminding(date time.Time, today time.Time, p RemindPattern) bool {
 		}
 		step++
 	}
+}
+
+// UpdatePattern updates the pattern in memory
+func (s *SheetService) UpdatePattern(pattern RemindPattern) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pattern = pattern
+}
+
+// GetPattern returns a copy of the current pattern
+func (s *SheetService) GetPattern() RemindPattern {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	pattern := make(RemindPattern, len(s.pattern))
+	copy(pattern, s.pattern)
+	return pattern
+}
+
+// LoadPatternFromJSON loads pattern from a JSON file
+func LoadPatternFromJSON(path string) (RemindPattern, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Return default pattern if file doesn't exist
+			return RemindPattern{1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89}, nil
+		}
+		return nil, err
+	}
+
+	var pattern RemindPattern
+	if err := json.Unmarshal(data, &pattern); err != nil {
+		return nil, fmt.Errorf("failed to parse pattern JSON: %v", err)
+	}
+
+	return pattern, nil
+}
+
+// SavePatternToJSON saves pattern to a JSON file
+func SavePatternToJSON(path string, pattern RemindPattern) error {
+	data, err := json.MarshalIndent(pattern, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal pattern: %v", err)
+	}
+
+	// Ensure directory exists
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to create directory: %v", err)
+	}
+
+	if err := os.WriteFile(path, data, 0644); err != nil {
+		return fmt.Errorf("failed to write pattern file: %v", err)
+	}
+
+	return nil
 }

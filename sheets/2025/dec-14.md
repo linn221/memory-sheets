@@ -1,0 +1,1 @@
+PARTITION BY split returned rows into group ORDER BY sort the items of each group that has been split by PARTITION BY

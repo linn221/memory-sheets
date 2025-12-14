@@ -26,20 +26,20 @@ func (vr *ViewRenderer) render(component templ.Component) error {
 	return component.Render(vr.ctx, vr.w)
 }
 
-func (vr *ViewRenderer) ListSheets(session *models.Session, sheets []*models.MemorySheet) error {
-	return vr.render(Index(session, sheets))
+func (vr *ViewRenderer) IndexPage(session *models.Session, sheets []*models.MemorySheet, todaySheet *models.MemorySheet) error {
+	return vr.render(Index(session, sheets, todaySheet))
 }
 
-func (vr *ViewRenderer) ListingSheet(sheet *models.MemorySheet, prev *models.MemorySheet, next *models.MemorySheet) error {
-	return vr.render(ListingSheet(sheet, prev, next))
-}
-
-func (vr *ViewRenderer) NewSheetPage() error {
-	return vr.render(CreateSheetPage())
+func (vr *ViewRenderer) SheetListingComponent(sheet *models.MemorySheet) error {
+	return vr.render(ListingSheet(sheet))
 }
 
 func (vr *ViewRenderer) EditSheetPage(date string, content string) error {
 	return vr.render(EditSheetPage(date, content))
+}
+
+func (vr *ViewRenderer) ChangePatternPage(selectedDays map[int]bool) error {
+	return vr.render(ChangePatternPage(selectedDays))
 }
 
 func Handler(handle func(vr *ViewRenderer) error) http.HandlerFunc {

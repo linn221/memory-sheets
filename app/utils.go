@@ -30,12 +30,12 @@ func readFileContent(path string) (string, error) {
 	return string(content), nil
 }
 
-// writeFileContent writes content to a file at the given path, creating parent directories if needed
+// writeFileContent writes content to a file at the given path
 func writeFileContent(path string, content string) error {
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
+	// dir := filepath.Dir(path)
+	// if err := os.MkdirAll(dir, 0755); err != nil {
+	// 	return err
+	// }
 	return os.WriteFile(path, []byte(content), 0644)
 }
 

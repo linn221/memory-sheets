@@ -2,7 +2,7 @@ package views
 
 import "github.com/linn221/memory-sheets/models"
 
-templ Index(session *models.Session, sheets []*models.MemorySheet) {
+templ Index(session *models.Session, sheets []*models.MemorySheet, todaySheet *models.MemorySheet) {
     <html>
     @Header()
     <body>
@@ -10,20 +10,23 @@ templ Index(session *models.Session, sheets []*models.MemorySheet) {
             if session.HasMessage() {
                 <blockquote>{session.FlushMessage()}</blockquote>
             }
-                <button hx-get="/sheets/new" hx-target="#sheet-form">New</button>
-                <div id="sheet-form"></div>
                 <ul>
+                if todaySheet == nil {
+                    @CreateSheetComponent()
+                } else {
+                    @ListingSheet(todaySheet)
+                }
                 for _, sheet := range sheets {
                     <li>
-                        <a href={sheet.Url()} hx-get={sheet.Url()} hx-target="#sheet-content" hx-swap="outerHTML">
+                        <a href={"#"+sheet.DateStr()}>
                             {sheet.Title()}
                         </a>
                     </li>
                 }
                 </ul>
 
-                if len(sheets) > 0 {
-                    @ListingSheet(sheets[0], nil, sheets[1])
+                for _, sheet := range sheets {
+                    @ListingSheet(sheet)
                 }
             </main>
     </body>
