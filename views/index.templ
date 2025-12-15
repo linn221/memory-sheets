@@ -26,8 +26,6 @@ templ Index(session *models.Session, sheets []*models.MemorySheet, todaySheet *m
             }
                 if todaySheet == nil {
                     @CreateSheetComponent()
-                } else {
-                    @ListingSheet(todaySheet)
                 }
 
                 @SheetListingComponent(sheets)

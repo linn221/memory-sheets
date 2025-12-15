@@ -1,1 +1,4 @@
-**hello** *word*
+- htmx will not swap if status code is 204, **hx-swab-oob** will not conflict with normal swap, hx-target will be ignored.
+- **HX-Location: /location** header will fetch the location, then swap the response to hx-target, instead of redirecting and reloading the page
+- text input with hx-get will send the request to hx-get, input name as query, GET $hx-get?$name=$value
+- `hx-target="this" hx-swap="outerHTML"` pattern is conventional for swapping the component/click to edit, etc

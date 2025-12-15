@@ -23,7 +23,7 @@ type SheetService struct {
 
 // read the dir directory and scan sheets []*models.MemorySheet, store the sheets in SheetService
 // 2025/jan-1.md will be turned into models.MemorySheet of date (jan 1 2025 00:00:00 UTC), and Text will be the contents of the file
-// the sheets slice will always be ordered by Date field ascending
+// the sheets slice will always be ordered by Date field descending (latest first)
 func (s *SheetService) ReadDir() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -229,18 +229,18 @@ func (s *SheetService) fromDateToFilepath(date time.Time) string {
 	return filepath.Join(s.dir, filename)
 }
 
-// sortSheets sorts the sheets slice by Date field ascending
+// sortSheets sorts the sheets slice by Date field descending (latest first)
 func (s *SheetService) sortSheets() {
 	sort.Slice(s.sheets, func(i, j int) bool {
-		return s.sheets[i].Date.Before(s.sheets[j].Date)
+		return s.sheets[i].Date.After(s.sheets[j].Date)
 	})
 }
 
-// insertSheetInOrder inserts a sheet into the sheets slice at the correct position to maintain ascending order by Date
+// insertSheetInOrder inserts a sheet into the sheets slice at the correct position to maintain descending order by Date (latest first)
 func (s *SheetService) insertSheetInOrder(sheet *models.MemorySheet) {
 	// Find the insertion point
 	insertIndex := sort.Search(len(s.sheets), func(i int) bool {
-		return !s.sheets[i].Date.Before(sheet.Date)
+		return s.sheets[i].Date.Before(sheet.Date)
 	})
 
 	// Insert at the found position
@@ -271,9 +271,9 @@ func (s *SheetService) loadSheetFromFile(date time.Time, filepath string) (int, 
 		Text: content,
 	}
 
-	// Find the insertion point before inserting
+	// Find the insertion point before inserting (maintain descending order)
 	insertIndex := sort.Search(len(s.sheets), func(i int) bool {
-		return !s.sheets[i].Date.Before(normalizedDate)
+		return s.sheets[i].Date.Before(normalizedDate)
 	})
 
 	// Insert at the found position
@@ -334,8 +334,8 @@ func (s *SheetService) Search(patternStr string) ([]*models.MemorySheet, error) 
 		return s.sheets, nil
 	}
 
-	// Compile regex pattern
-	re, err := regexp.Compile(patternStr)
+	// Compile regex pattern with case-insensitive flag
+	re, err := regexp.Compile("(?i)" + patternStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid regex pattern: %v", err)
 	}
