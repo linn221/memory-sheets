@@ -26,24 +26,44 @@ func (vr *ViewRenderer) render(component templ.Component) error {
 	return component.Render(vr.ctx, vr.w)
 }
 
-func (vr *ViewRenderer) IndexPage(session *models.Session, sheets []*models.MemorySheet, todaySheet *models.MemorySheet) error {
-	return vr.render(Index(session, sheets, todaySheet))
+func (vr *ViewRenderer) IndexPage(sheets []*models.MemorySheet, todaySheet *models.MemorySheet, navSheets []*models.NavSheet) error {
+	return vr.render(Index(sheets, todaySheet, navSheets))
 }
 
-func (vr *ViewRenderer) SheetListingComponent(sheet *models.MemorySheet) error {
-	return vr.render(ListingSheet(sheet))
+func (vr *ViewRenderer) SheetComponent(sheet *models.MemorySheet) error {
+	return vr.render(SheetComponent(sheet))
 }
 
-func (vr *ViewRenderer) EditSheetPage(date string, content string) error {
-	return vr.render(EditSheetPage(date, content))
+func (vr *ViewRenderer) ShowEditSheet(date string, content string) error {
+	return vr.render(EditSheetForm(date, content))
 }
 
-func (vr *ViewRenderer) ChangePatternPage(selectedDays map[int]bool) error {
-	return vr.render(ChangePatternPage(selectedDays))
+func (vr *ViewRenderer) ShowChangePattern(selectedDays map[int]bool) error {
+	return vr.render(ChangePattern(selectedDays))
 }
 
-func (vr *ViewRenderer) SheetListingComponents(sheets []*models.MemorySheet) error {
+func (vr *ViewRenderer) SheetListingComponent(sheets []*models.MemorySheet) error {
 	return vr.render(SheetListingComponent(sheets))
+}
+
+func (vr *ViewRenderer) NavSheetComponent(sheet *models.NavSheet) error {
+	return vr.render(NavSheetComponent(sheet))
+}
+
+func (vr *ViewRenderer) NavSheetsComponent(navSheets []*models.NavSheet) error {
+	return vr.render(NavSheetsComponent(navSheets, true))
+}
+
+func (vr *ViewRenderer) ShowCreateNavSheet() error {
+	return vr.render(CreateNavSheetForm())
+}
+
+func (vr *ViewRenderer) ShowEditNavSheet(title string, content string) error {
+	return vr.render(EditNavSheetForm(title, content))
+}
+
+func (vr *ViewRenderer) SearchResults(memorySheets []*models.MemorySheet, navSheets []*models.NavSheet) error {
+	return vr.render(SearchResults(memorySheets, navSheets))
 }
 
 func Handler(handle func(vr *ViewRenderer) error) http.HandlerFunc {

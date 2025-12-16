@@ -1,0 +1,15 @@
+package views
+
+import "github.com/linn221/memory-sheets/models"
+
+templ SearchResults(memorySheets []*models.MemorySheet, navSheets []*models.NavSheet) {
+    <div id="sheets">
+        for _, sheet := range memorySheets {
+            @SheetComponent(sheet)
+        }
+        for _, sheet := range navSheets {
+            @NavSheetComponent(sheet)
+        }
+    </div>
+}
+

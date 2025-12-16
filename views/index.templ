@@ -2,7 +2,7 @@ package views
 
 import "github.com/linn221/memory-sheets/models"
 
-templ Index(session *models.Session, sheets []*models.MemorySheet, todaySheet *models.MemorySheet) {
+templ Index(sheets []*models.MemorySheet, todaySheet *models.MemorySheet, navSheets []*models.NavSheet) {
     <html>
     @Header()
     <body>
@@ -11,7 +11,16 @@ templ Index(session *models.Session, sheets []*models.MemorySheet, todaySheet *m
                 <a href="/all-sheets">all sheets</a>
                 |
                 <a href="/sheets">today sheets</a>
+                <br>
+                <a hx-get="/nav-sheets/new"
+                    hx-target="#sheets" hx-swap="afterbegin"
+                    style="cursor: pointer;"
+                >New Nav</a>
+                @NavSheetsComponent(navSheets, false)
             </nav>
+
+            <blockquote id="status" style="display: none;"></blockquote>
+            
             <input type="search" placeholder="Search"
                 name="q"
                 hx-get="/search"
@@ -19,13 +28,8 @@ templ Index(session *models.Session, sheets []*models.MemorySheet, todaySheet *m
                 hx-target="#sheets"
                 style="width: 100%; box-sizing: border-box; margin: 2rem 0;"
             >
-            if session.HasMessage() {
-                <blockquote id="status">{session.FlushMessage()}</blockquote>
-            } else {
-                <blockquote id="status" style="display: none;"></blockquote>
-            }
                 if todaySheet == nil {
-                    @CreateSheetComponent()
+                    @CreateSheetForm()
                 }
 
                 @SheetListingComponent(sheets)
@@ -35,10 +39,25 @@ templ Index(session *models.Session, sheets []*models.MemorySheet, todaySheet *m
             </html>
 }
 
+
+templ NavSheetsComponent(navSheets []*models.NavSheet, oobSwap bool) {
+    <span id="nav-sheets-listing"
+    if oobSwap {
+        hx-swap-oob="true"
+    }
+    >
+    for _, navSheet := range navSheets {
+        | <a href={"/nav-sheets/" + navSheet.Title} hx-get={"/nav-sheets/" + navSheet.Title}
+        hx-target="#sheets" hx-swap="afterbegin"
+        >{navSheet.Title}</a>
+    }
+    </span>
+}
+
 templ SheetListingComponent(sheets []*models.MemorySheet) {
     <div id="sheets">
             for _, sheet := range sheets {
-                @ListingSheet(sheet)
+                @SheetComponent(sheet)
             }
     </div>
 }

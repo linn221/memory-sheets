@@ -2,7 +2,7 @@ package views
 
 import "github.com/linn221/memory-sheets/models"
 
-templ ListingSheet(sheet *models.MemorySheet) {
+templ SheetComponent(sheet *models.MemorySheet) {
     <div id={sheet.DateStr()} hx-target="this" hx-swap="outerHTML">
         <lead><u>{sheet.Title()}</u></lead>
         <div class="box">

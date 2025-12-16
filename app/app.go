@@ -3,12 +3,14 @@ package app
 import (
 	"fmt"
 	"net/http"
+	"os"
 )
 
 type App struct {
-	sheetService   *SheetService
-	AuthMiddleware func(http.Handler) http.Handler
-	config         Cfg
+	sheetService    *SheetService
+	navSheetService *NavSheetService
+	AuthMiddleware  func(http.Handler) http.Handler
+	config          Cfg
 }
 
 type Cfg struct {
@@ -36,11 +38,26 @@ func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Hand
 	if err != nil {
 		panic(err)
 	}
+
+	navSheetService := &NavSheetService{
+		dir: "nav",
+	}
+	// Create nav directory if it doesn't exist
+	if err := os.MkdirAll("nav", 0755); err != nil {
+		fmt.Printf("Warning: failed to create nav directory: %v\n", err)
+	}
+	err = navSheetService.ReadDir()
+	if err != nil {
+		// If nav directory is empty or has issues, that's okay
+		fmt.Printf("Warning: failed to read nav directory: %v\n", err)
+	}
+
 	return &App{
 		config: Cfg{
 			port: port,
 		},
-		sheetService:   sheetSerice,
-		AuthMiddleware: authMiddleware,
+		sheetService:    sheetSerice,
+		navSheetService: navSheetService,
+		AuthMiddleware:  authMiddleware,
 	}
 }

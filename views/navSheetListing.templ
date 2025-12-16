@@ -1,0 +1,17 @@
+package views
+
+import "github.com/linn221/memory-sheets/models"
+
+templ NavSheetComponent(sheet *models.NavSheet) {
+    <div id={"nav-" + sheet.Title} hx-target="this" hx-swap="outerHTML">
+        <lead><u>{sheet.Title}</u></lead>
+        <div class="box">
+            @templ.Raw(MarkdownToHTMLSafe(sheet.Text))
+        </div>
+        <button hx-get={"/nav-sheets/" + sheet.Title + "/edit"}>Edit</button>
+        <button hx-delete={"/nav-sheets/" + sheet.Title} hx-confirm="are you sure?" hx-swap="delete">Delete</button>
+        <br>
+        <hr>
+    </div>
+}
+

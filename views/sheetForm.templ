@@ -1,6 +1,6 @@
 package views
 
-templ EditSheetPage(date string, content string) {
+templ EditSheetForm(date string, content string) {
         <div hx-target="this" hx-swap="outerHTML">
                 <h3>Edit Memory Sheet</h3>
                 <form hx-put={"/sheets/" + date}>
@@ -10,7 +10,7 @@ templ EditSheetPage(date string, content string) {
         </div>
 }
 
-templ CreateSheetComponent() {
+templ CreateSheetForm() {
         <div hx-target="this" hx-swap="outerHTML">
         <h3>Create Memory Sheet</h3>
         <form hx-post="/sheets">

@@ -8,7 +8,7 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func EditSheetForm(date string, content string) templ.Component {
+func EditNavSheetForm(title string, content string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,14 +29,14 @@ func EditSheetForm(date string, content string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-target=\"this\" hx-swap=\"outerHTML\"><h3>Edit Memory Sheet</h3><form hx-put=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-target=\"this\" hx-swap=\"outerHTML\"><h3>Edit Nav Sheet</h3><form hx-put=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("/sheets/" + date)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("/nav-sheets/" + title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sheetForm.templ`, Line: 6, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `navSheetForm.templ`, Line: 6, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -49,7 +49,7 @@ func EditSheetForm(date string, content string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(content)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `sheetForm.templ`, Line: 7, Col: 165}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `navSheetForm.templ`, Line: 7, Col: 165}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -63,7 +63,7 @@ func EditSheetForm(date string, content string) templ.Component {
 	})
 }
 
-func CreateSheetForm() templ.Component {
+func CreateNavSheetForm() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -84,7 +84,7 @@ func CreateSheetForm() templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div hx-target=\"this\" hx-swap=\"outerHTML\"><h3>Create Memory Sheet</h3><form hx-post=\"/sheets\"><textarea name=\"content\" style=\"width: 100%; box-sizing: border-box; overflow: hidden; resize: vertical;\" oninput=\"autoResizeTextarea(this)\" placeholder=\"Insert what you have learned today\"></textarea> <button type=\"submit\">Create</button></form></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div hx-target=\"this\" hx-swap=\"outerHTML\"><h3>Create Nav Sheet</h3><form hx-post=\"/nav-sheets\"><input name=\"title\" placeholder=\"Title\"> <textarea name=\"content\" style=\"width: 100%; box-sizing: border-box; overflow: hidden; resize: vertical;\" oninput=\"autoResizeTextarea(this)\"></textarea> <button type=\"submit\">Create</button></form></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

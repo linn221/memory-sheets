@@ -11,8 +11,8 @@ import (
 	"github.com/linn221/memory-sheets/views"
 )
 
-// HandleGetSheets handles GET /sheets - returns sheets that need to be reminded today
-func (a *App) HandleGetSheets(vr *views.ViewRenderer) error {
+// ShowTodaySheets handles GET /sheets - returns sheets that need to be reminded today
+func (a *App) ShowTodaySheets(vr *views.ViewRenderer) error {
 	today := Today()
 	remindingSheets, err := a.sheetService.LookUpSheets(today)
 	if err != nil {
@@ -23,20 +23,20 @@ func (a *App) HandleGetSheets(vr *views.ViewRenderer) error {
 		todaySheet = nil
 	}
 
-	return vr.IndexPage(&TheSession, remindingSheets, todaySheet)
+	return vr.IndexPage(remindingSheets, todaySheet, a.navSheetService.ListSheets())
 }
 
-// HandleGetAllSheets handles GET /all-sheets - returns all sheets
-func (a *App) HandleGetAllSheets(vr *views.ViewRenderer) error {
+// ShowAllSheets handles GET /all-sheets - returns all sheets
+func (a *App) ShowAllSheets(vr *views.ViewRenderer) error {
 	todaySheet, err := a.sheetService.GetSheetByDate(Today())
 	if err != nil {
 		todaySheet = nil
 	}
-	return vr.IndexPage(&TheSession, a.sheetService.sheets, todaySheet)
+	return vr.IndexPage(a.sheetService.sheets, todaySheet, a.navSheetService.ListSheets())
 }
 
-// HandleEditSheet handles GET /sheets/{date}/edit - returns the edit page for a sheet
-func (a *App) HandleEditSheet(vr *views.ViewRenderer) error {
+// ShowEditSheet handles GET /sheets/{date}/edit - returns the edit page for a sheet
+func (a *App) ShowEditSheet(vr *views.ViewRenderer) error {
 	r := vr.Request()
 	dateStr := r.PathValue("date")
 	date, err := time.Parse(time.DateOnly, dateStr)
@@ -48,11 +48,11 @@ func (a *App) HandleEditSheet(vr *views.ViewRenderer) error {
 		return err
 	}
 	content := sheet.Text
-	return vr.EditSheetPage(dateStr, content)
+	return vr.ShowEditSheet(dateStr, content)
 }
 
-// HandleGetSheetByDate handles GET /sheets/{date} - returns a specific sheet by date
-func (a *App) HandleGetSheetByDate(vr *views.ViewRenderer) error {
+// ShowSheet handles GET /sheets/{date} - returns a specific sheet by date
+func (a *App) ShowSheet(vr *views.ViewRenderer) error {
 	r := vr.Request()
 	dateStr := r.PathValue("date")
 	if dateStr == "" {
@@ -77,7 +77,7 @@ func (a *App) HandleGetSheetByDate(vr *views.ViewRenderer) error {
 	if current == nil {
 		return errors.New("note not found")
 	}
-	return vr.SheetListingComponent(current)
+	return vr.SheetComponent(current)
 }
 
 func (a *App) HandleCreateSheet(vr *views.ViewRenderer) error {
@@ -96,7 +96,7 @@ func (a *App) HandleCreateSheet(vr *views.ViewRenderer) error {
 	if err != nil {
 		return err
 	}
-	return vr.SheetListingComponent(sheet)
+	return vr.SheetComponent(sheet)
 }
 
 // HandleUpdateSheet handles PUT /sheets/{date} - updates an existing sheet
@@ -125,7 +125,7 @@ func (a *App) HandleUpdateSheet(vr *views.ViewRenderer) error {
 	if err != nil {
 		return err
 	}
-	return vr.SheetListingComponent(sheet)
+	return vr.SheetComponent(sheet)
 }
 
 // HandleDeleteSheet handles DELETE /sheets/{date} - deletes a sheet
@@ -150,8 +150,8 @@ func (a *App) HandleDeleteSheet(vr *views.ViewRenderer) error {
 	return nil
 }
 
-// HandleGetChangePattern handles GET /change-pattern - shows the pattern editor
-func (a *App) HandleGetChangePattern(vr *views.ViewRenderer) error {
+// ShowChangePattern handles GET /change-pattern - shows the pattern editor
+func (a *App) ShowChangePattern(vr *views.ViewRenderer) error {
 	pattern := a.sheetService.GetPattern()
 	// Convert pattern to a map for easy lookup
 	selectedMap := make(map[int]bool)
@@ -160,7 +160,7 @@ func (a *App) HandleGetChangePattern(vr *views.ViewRenderer) error {
 			selectedMap[day] = true
 		}
 	}
-	return vr.ChangePatternPage(selectedMap)
+	return vr.ShowChangePattern(selectedMap)
 }
 
 // HandlePostChangePattern handles POST /change-pattern - saves the pattern
@@ -210,11 +210,117 @@ func (a *App) HandleSearch(vr *views.ViewRenderer) error {
 	r := vr.Request()
 	query := r.URL.Query().Get("q")
 
-	// Search for matching sheets
-	results, err := a.sheetService.Search(query)
+	// Search for matching memory sheets
+	memoryResults, err := a.sheetService.Search(query)
 	if err != nil {
 		return err
 	}
 
-	return vr.SheetListingComponents(results)
+	// Search for matching nav sheets
+	navResults, err := a.navSheetService.Search(query)
+	if err != nil {
+		return err
+	}
+
+	return vr.SearchResults(memoryResults, navResults)
+}
+
+// ShowNavSheet handles GET /nav-sheets/{title} - returns a specific nav sheet
+func (a *App) ShowNavSheet(vr *views.ViewRenderer) error {
+	r := vr.Request()
+	title := r.PathValue("title")
+	if title == "" {
+		return errors.New("title cannot be empty")
+	}
+
+	sheet, err := a.navSheetService.Get(title)
+	if err != nil {
+		return err
+	}
+	return vr.NavSheetComponent(sheet)
+}
+
+// ShowEditNavSheet handles GET /nav-sheets/{title}/edit - returns the edit page for a nav sheet
+func (a *App) ShowEditNavSheet(vr *views.ViewRenderer) error {
+	r := vr.Request()
+	title := r.PathValue("title")
+	if title == "" {
+		return errors.New("title cannot be empty")
+	}
+
+	sheet, err := a.navSheetService.Get(title)
+	if err != nil {
+		return err
+	}
+	content := sheet.Text
+	return vr.ShowEditNavSheet(title, content)
+}
+
+func (a *App) ShowCreateNavSheet(vr *views.ViewRenderer) error {
+	return vr.ShowCreateNavSheet()
+}
+
+// HandleUpdateNavSheet handles PUT /nav-sheets/{title} - updates an existing nav sheet
+func (a *App) HandleUpdateNavSheet(vr *views.ViewRenderer) error {
+	r := vr.Request()
+	title := r.PathValue("title")
+	if title == "" {
+		return errors.New("title cannot be empty")
+	}
+
+	// Read request body
+	content := r.FormValue("content")
+
+	// Update the sheet
+	err := a.navSheetService.Update(title, content)
+	if err != nil {
+		return err
+	}
+
+	sheet, err := a.navSheetService.Get(title)
+	if err != nil {
+		return err
+	}
+	return vr.NavSheetComponent(sheet)
+}
+
+// HandleDeleteNavSheet handles DELETE /nav-sheets/{title} - deletes a nav sheet
+func (a *App) HandleDeleteNavSheet(vr *views.ViewRenderer) error {
+	r := vr.Request()
+	title := r.PathValue("title")
+	if title == "" {
+		return errors.New("title cannot be empty")
+	}
+
+	// Delete the sheet
+	err := a.navSheetService.Delete(title)
+	if err != nil {
+		return err
+	}
+
+	return vr.NavSheetsComponent(a.navSheetService.ListSheets())
+}
+
+func (a *App) HandleCreateNavSheet(vr *views.ViewRenderer) error {
+	r := vr.Request()
+	title := r.FormValue("title")
+	if title == "" {
+		return errors.New("title cannot be empty")
+	}
+	content := r.FormValue("content")
+
+	// Delete the sheet
+	err := a.navSheetService.Create(title, content)
+	if err != nil {
+		return err
+	}
+
+	sheet, err := a.navSheetService.Get(title)
+	if err != nil {
+		return err
+	}
+	if err := vr.NavSheetComponent(sheet); err != nil {
+		return err
+	}
+	return vr.NavSheetsComponent(a.navSheetService.ListSheets())
 }
