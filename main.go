@@ -18,6 +18,9 @@ func main() {
 	mux := http.NewServeMux()
 	app.SetupRoutes(mux)
 
+	fileHandler := http.StripPrefix("/static", http.FileServer(http.Dir("static")))
+	mux.Handle("/static/", fileHandler)
+
 	srv := http.Server{
 		Addr:    ":8033",
 		Handler: secretMd(middlewares.LoggingMiddleware(middlewares.Recovery(mux))),

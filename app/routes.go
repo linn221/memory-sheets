@@ -23,6 +23,4 @@ func (a *App) SetupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /nav-sheets/{title}", views.Handler(a.HandleDeleteNavSheet))
 	// mux.HandleFunc("GET /change-pattern", views.Handler(a.ShowChangePattern))
 	// mux.HandleFunc("POST /change-pattern", views.Handler(a.HandlePostChangePattern))
-	fileHandler := http.StripPrefix("/static", http.FileServer(http.Dir("static")))
-	mux.Handle("/static/", fileHandler)
 }
