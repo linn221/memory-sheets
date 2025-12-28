@@ -1,3 +1,3 @@
 * apple
 * orange
-* pineabbble
+* pineapple

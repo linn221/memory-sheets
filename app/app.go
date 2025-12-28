@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 )
 
 type App struct {
 	sheetService    *SheetService
 	navSheetService *NavSheetService
-	AuthMiddleware  func(http.Handler) http.Handler
-	config          Cfg
 }
 
-type Cfg struct {
-	port string
+func Handler(mux *http.ServeMux, dir string, patternFile string) http.Handler {
+	app := NewApp(dir, patternFile)
+	app.SetupRoutes(mux)
+	return mux
 }
 
-func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Handler, pattern RemindPattern) *App {
+func NewApp(dir string, patternFile string) *App {
 	// Try to load pattern from JSON file, fallback to provided pattern
-	patternFile := "pattern.json"
 	loadedPattern, err := LoadPatternFromJSON(patternFile)
 	if err != nil {
-		// If loading fails, use provided pattern and try to save it
-		loadedPattern = pattern
-		if saveErr := SavePatternToJSON(patternFile, pattern); saveErr != nil {
+		// If loading fails, use default pattern and try to save it
+		loadedPattern = RemindPattern{1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89}
+		if saveErr := SavePatternToJSON(patternFile, loadedPattern); saveErr != nil {
 			// Log error but don't fail startup
 			fmt.Printf("Warning: failed to save pattern to %s: %v\n", patternFile, saveErr)
 		}
@@ -40,10 +40,10 @@ func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Hand
 	}
 
 	navSheetService := &NavSheetService{
-		dir: "nav",
+		dir: path.Join(dir, "nav"),
 	}
 	// Create nav directory if it doesn't exist
-	if err := os.MkdirAll("nav", 0755); err != nil {
+	if err := os.MkdirAll(navSheetService.dir, 0755); err != nil {
 		fmt.Printf("Warning: failed to create nav directory: %v\n", err)
 	}
 	err = navSheetService.ReadDir()
@@ -53,11 +53,7 @@ func NewApp(dir string, port string, authMiddleware func(http.Handler) http.Hand
 	}
 
 	return &App{
-		config: Cfg{
-			port: port,
-		},
 		sheetService:    sheetSerice,
 		navSheetService: navSheetService,
-		AuthMiddleware:  authMiddleware,
 	}
 }

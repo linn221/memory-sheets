@@ -68,6 +68,10 @@ func parseFilepathToSheet(dir string, path string) (*models.MemorySheet, error) 
 	parts := strings.Split(relPath, string(filepath.Separator))
 	if len(parts) == 2 {
 		// Old format: YYYY/month-day
+		if parts[0] == "nav" {
+			// skip parsing if directory name is nav, meaning the nav sheets
+			return nil, nil
+		}
 		if _, err := fmt.Sscanf(parts[0], "%d", &year); err != nil {
 			return nil, fmt.Errorf("invalid year in filepath: %s", path)
 		}

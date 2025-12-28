@@ -1,4 +1,4 @@
-package app
+package middlewares
 
 import (
 	"log"
@@ -33,7 +33,7 @@ func (rw *responseWriter) StatusCode() int {
 }
 
 // LoggingMiddleware logs HTTP requests with IP, latency, URL, method, and status code
-func loggingMiddleware(next http.Handler) http.Handler {
+func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Start timing
 		start := time.Now()

@@ -6,20 +6,6 @@ import (
 	"github.com/linn221/memory-sheets/views"
 )
 
-func (a *App) Serve() {
-	mux := http.NewServeMux()
-	a.SetupRoutes(mux)
-
-	srv := http.Server{
-		Addr:    ":" + a.config.port,
-		Handler: a.AuthMiddleware(loggingMiddleware(recovery(mux))),
-	}
-	err := srv.ListenAndServe()
-	if err != nil {
-		panic(err)
-	}
-}
-
 func (a *App) SetupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /sheets", views.Handler(a.ShowTodaySheets))
 	mux.HandleFunc("GET /sheets/{date}/edit", views.Handler(a.ShowEditSheet))

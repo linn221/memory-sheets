@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/linn221/memory-sheets/app"
+	"github.com/linn221/memory-sheets/middlewares"
 	secretmiddleware "github.com/linn221/memory-sheets/secretMiddleware"
 )
 
@@ -12,6 +14,16 @@ func main() {
 		// could decide to do either email or print to console
 		fmt.Println(magicLink)
 	})
-	app := app.NewApp("sheets", "8033", secretMd, app.RemindPattern{1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89})
-	app.Serve()
+	app := app.NewApp("sheets", "pattern.json")
+	mux := http.NewServeMux()
+	app.SetupRoutes(mux)
+
+	srv := http.Server{
+		Addr:    ":8033",
+		Handler: secretMd(middlewares.LoggingMiddleware(middlewares.Recovery(mux))),
+	}
+	err := srv.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
 }

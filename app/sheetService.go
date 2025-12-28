@@ -40,7 +40,7 @@ func (s *SheetService) ReadDir() error {
 			sheet, err := parseFilepathToSheet(s.dir, path)
 			if err != nil {
 				fmt.Printf("%s file does not get parsed for some reason: %v\n", path, err)
-			} else {
+			} else if sheet != nil {
 				s.sheets = append(s.sheets, sheet)
 			}
 		}
